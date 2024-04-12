@@ -1,0 +1,6 @@
+fetch_new_data:
+  description: Fetch new data from the server for the specified device.
+  fields:
+    device_id:
+      description: The ID of the device to fetch data for.
+      example: "12345"
