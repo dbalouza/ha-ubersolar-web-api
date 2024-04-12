@@ -8,7 +8,7 @@ from homeassistant.exceptions import PlatformNotReady
 
 _LOGGER = logging.getLogger(__name__)
 
-DOMAIN = "your_component"
+DOMAIN = "ubertrac api"
 
 async def async_setup(hass, config):
     """Set up your integration based on configuration.yaml."""
