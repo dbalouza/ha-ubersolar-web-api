@@ -5,7 +5,7 @@ from homeassistant.const import CONF_USERNAME, CONF_PASSWORD
 import aiohttp
 import logging
 
-from .const import DOMAIN  # Ensure DOMAIN is defined in your constants file
+from .const import DOMAIN  # Ensure DOMAIN is defined in your constants
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,23 +17,23 @@ class YourComponentConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def validate_input(self, hass, data):
         """Validate the user input allows us to connect."""
-        username = data[CONF_USERNAME]
-        password = data[CONF_PASSWORD]
-        domain = "http://ubertrac.co.za"  # Use your fixed domain here
+        username = data['username']
+        password = data['password']
+        device_id = data['device_id']
+        domain = "http://ubertrac.co.za"  # Static domain
 
-        session = async_get_clientsession(hass)
+        # Use an aiohttp session from Home Assistant's session pool
+        session = hass.helpers.aiohttp_client.async_get_clientsession()
+
+        # Assuming get_jwt_token is adjusted to be an async function
         try:
             token = await get_jwt_token(session, domain, username, password)
             if not token:
                 raise Exception("Failed to log in with provided credentials")
-            return {"title": username}  # Use the username as entry title
+            # Optionally validate the device ID here if necessary
+            return {"title": username, "device_id": device_id}  # Use the username and device_id as entry title
         finally:
             await session.close()
-
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry):
-        return OptionsFlowHandler(config_entry)
 
     async def async_step_user(self, user_input=None):
         """Handle a flow initiated by the user."""
@@ -48,10 +48,34 @@ class YourComponentConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors['base'] = 'auth'
 
         DATA_SCHEMA = vol.Schema({
-            vol.Required(CONF_USERNAME): str,
-            vol.Required(CONF_PASSWORD): str,
+            vol.Required('username'): str,
+            vol.Required('password'): str,
+            vol.Required('device_id'): str,
         })
 
         return self.async_show_form(
             step_id="user", data_schema=DATA_SCHEMA, errors=errors
+        )
+
+# If you have options flow
+@callback
+def async_get_options_flow(config_entry):
+    return OptionsFlow(config_entry)
+
+class OptionsFlow(config_entries.OptionsFlow):
+    def __init__(self, config_entry):
+        self.config_entry = config_entry
+
+    async def async_step_init(self, user_input=None):
+        """Manage the options."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        options = self.config_entry.options
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Optional('device_id', default=options.get('device_id')): str,
+            })
         )
