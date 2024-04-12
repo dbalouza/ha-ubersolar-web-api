@@ -1,0 +1,11 @@
+{
+  "domain": "ubersolarAPI",
+  "name": "UberTrac API",
+  "version": "1.0",
+  "documentation": "https://example.com/docs/your_component",
+  "requirements": ["aiohttp>=3.7.4"],
+  "dependencies": [],
+  "codeowners": ["@dbalouza"],
+  "iot_class": "Cloud Polling",
+  "config_flow": false
+}
